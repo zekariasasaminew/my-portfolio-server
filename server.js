@@ -1,14 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const spotify = require("./spotify");
-const https = require("https");
-const httpsLocalhost = require("https-localhost")();
+// const https = require("https");
+// const httpsLocalhost = require("https-localhost")();
 const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
-const PORT = 3001;
-const REDIRECT_URI = "https://127.0.0.1:3001/callback";
+const PORT = process.env.PORT || 3001;
+const REDIRECT_URI = `${process.env.BASE_URL}/callback`;
 const SCOPES = [
   "user-read-currently-playing",
   "user-read-recently-played",
@@ -90,38 +90,6 @@ app.get("/api/spotify/current-track", async (req, res) => {
   }
 });
 
-// Start HTTPS server
-async function startServer() {
-  try {
-    console.log("Getting SSL certificates...");
-    const certs = await httpsLocalhost.getCerts();
-
-    const httpsServer = https.createServer(certs, app);
-
-    httpsServer.listen(PORT, "127.0.0.1", () => {
-      console.log(`Server running at https://127.0.0.1:${PORT}`);
-      console.log("Available endpoints:");
-      console.log(`1. Health check: https://127.0.0.1:${PORT}/`);
-      console.log(`2. Login: https://127.0.0.1:${PORT}/login`);
-      console.log(
-        `3. Current track: https://127.0.0.1:${PORT}/api/spotify/current-track`
-      );
-    });
-
-    httpsServer.on("error", (error) => {
-      if (error.code === "EADDRINUSE") {
-        console.error(
-          "Port is already in use. Please try again in a few moments or use a different port."
-        );
-        process.exit(1);
-      } else {
-        console.error("Server error:", error);
-      }
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-}
-
-startServer();
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
