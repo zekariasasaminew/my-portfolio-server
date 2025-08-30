@@ -1,8 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const spotify = require("./spotify");
-// const https = require("https");
-// const httpsLocalhost = require("https-localhost")();
 const axios = require("axios");
 require("dotenv").config();
 
@@ -16,7 +14,16 @@ const SCOPES = [
 ].join(" ");
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // Local development
+      "https://localhost:3000", // Local HTTPS
+      process.env.CLIENT_URL, // Production domain
+    ].filter(Boolean),
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Health check endpoint
