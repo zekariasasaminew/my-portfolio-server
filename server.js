@@ -19,7 +19,8 @@ app.use(
     origin: [
       "http://localhost:3000", // Local development
       "https://localhost:3000", // Local HTTPS
-      process.env.CLIENT_URL, // Production domain
+      process.env.CLIENT_URL, // Production client domain
+      process.env.RENDER_EXTERNAL_URL, // Render server URL (for testing)
     ].filter(Boolean),
     credentials: true,
   })
