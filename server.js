@@ -17,8 +17,10 @@ const SCOPES = [
 app.use(
   cors({
     origin: [
-      "http://localhost:3000", // Local development
-      "https://localhost:3000", // Local HTTPS
+      "http://localhost:3000",
+      "https://localhost:3000",
+      "https://www.zekariasasaminew.com",
+      "https://zekariasasaminew.com",
       process.env.CLIENT_URL, // Production client domain
       process.env.RENDER_EXTERNAL_URL, // Render server URL (for testing)
     ].filter(Boolean),
