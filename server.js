@@ -21,8 +21,8 @@ app.use(
       "https://localhost:3000",
       "https://www.zekariasasaminew.com",
       "https://zekariasasaminew.com",
-      process.env.CLIENT_URL, // Production client domain
-      process.env.RENDER_EXTERNAL_URL, // Render server URL (for testing)
+      process.env.CLIENT_URL,
+      process.env.RENDER_EXTERNAL_URL,
     ].filter(Boolean),
     credentials: true,
   })
@@ -102,4 +102,15 @@ app.get("/api/spotify/current-track", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Warm Spotify cache immediately and keep it fresh every 30s
+  spotify.startPolling(30 * 1000);
+
+  // Ping self every 14 minutes to prevent Render free-tier cold starts
+  const BASE_URL = process.env.BASE_URL;
+  if (BASE_URL) {
+    setInterval(() => {
+      axios.get(BASE_URL).catch(() => {});
+    }, 14 * 60 * 1000);
+  }
 });
