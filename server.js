@@ -86,6 +86,7 @@ app.get("/callback", async (req, res) => {
 app.get("/api/spotify/current-track", async (req, res) => {
   try {
     const track = await spotify.getCurrentTrack();
+    res.set("Cache-Control", "no-store");
     if (track) {
       res.json(track);
     } else {
@@ -103,8 +104,7 @@ app.get("/api/spotify/current-track", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 
-  // Warm Spotify cache immediately and keep it fresh every 30s
-  spotify.startPolling(30 * 1000);
+  spotify.startPolling();
 
   // Ping self every 14 minutes to prevent Render free-tier cold starts
   const BASE_URL = process.env.BASE_URL;
