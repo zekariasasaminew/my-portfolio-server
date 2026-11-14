@@ -34,53 +34,57 @@ app.get("/", (req, res) => {
   res.json({ status: "Server is running" });
 });
 
-// Login endpoint to get new token with correct permissions
-app.get("/login", (req, res) => {
-  const authUrl = `https://accounts.spotify.com/authorize?client_id=${
-    process.env.SPOTIFY_CLIENT_ID
-  }&response_type=code&redirect_uri=${encodeURIComponent(
-    REDIRECT_URI
-  )}&scope=${encodeURIComponent(SCOPES)}`;
+// One-time refresh token setup. Off in production; set ENABLE_TOKEN_SETUP=1
+// temporarily to mint a new SPOTIFY_REFRESH_TOKEN, then unset it.
+if (process.env.ENABLE_TOKEN_SETUP === "1") {
+  // Login endpoint to get new token with correct permissions
+  app.get("/login", (req, res) => {
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${
+      process.env.SPOTIFY_CLIENT_ID
+    }&response_type=code&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&scope=${encodeURIComponent(SCOPES)}`;
 
-  res.redirect(authUrl);
-});
+    res.redirect(authUrl);
+  });
 
-// Callback endpoint after Spotify auth
-app.get("/callback", async (req, res) => {
-  const code = req.query.code;
+  // Callback endpoint after Spotify auth
+  app.get("/callback", async (req, res) => {
+    const code = req.query.code;
 
-  try {
-    const response = await axios.post(
-      "https://accounts.spotify.com/api/token",
-      new URLSearchParams({
-        grant_type: "authorization_code",
-        code: code,
-        redirect_uri: REDIRECT_URI,
-      }),
-      {
-        headers: {
-          Authorization: `Basic ${Buffer.from(
-            `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-          ).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
+    try {
+      const response = await axios.post(
+        "https://accounts.spotify.com/api/token",
+        new URLSearchParams({
+          grant_type: "authorization_code",
+          code: code,
+          redirect_uri: REDIRECT_URI,
+        }),
+        {
+          headers: {
+            Authorization: `Basic ${Buffer.from(
+              `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+            ).toString("base64")}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
 
-    res.send(`
-      <h1>Success!</h1>
-      <p>Here's your new refresh token (save this in your .env file):</p>
-      <code style="word-break: break-all;">${response.data.refresh_token}</code>
-      <p>Replace your SPOTIFY_REFRESH_TOKEN in .env with this new token.</p>
-    `);
-  } catch (error) {
-    console.error(
-      "Error getting tokens:",
-      error.response?.data || error.message
-    );
-    res.status(500).send("Error getting tokens");
-  }
-});
+      res.send(`
+        <h1>Success!</h1>
+        <p>Here's your new refresh token (save this in your .env file):</p>
+        <code style="word-break: break-all;">${response.data.refresh_token}</code>
+        <p>Replace your SPOTIFY_REFRESH_TOKEN in .env with this new token.</p>
+      `);
+    } catch (error) {
+      console.error(
+        "Error getting tokens:",
+        error.response?.data || error.message
+      );
+      res.status(500).send("Error getting tokens");
+    }
+  });
+}
 
 // Spotify track endpoint
 app.get("/api/spotify/current-track", async (req, res) => {
