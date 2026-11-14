@@ -61,10 +61,10 @@ class SpotifyAPI {
   _toTrack(track, extra) {
     return {
       name: track.name,
-      artist: track.artists[0].name,
-      album: track.album.name,
-      albumArt: track.album.images[0]?.url,
-      spotifyUrl: track.external_urls.spotify,
+      artist: track.artists?.[0]?.name ?? "Unknown artist",
+      album: track.album?.name ?? "",
+      albumArt: track.album?.images?.[0]?.url ?? null,
+      spotifyUrl: track.external_urls?.spotify ?? null,
       ...extra,
     };
   }
